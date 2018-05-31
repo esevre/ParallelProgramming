@@ -12,12 +12,20 @@
 #include <algorithm>
 #include <numeric>
 
-#include "parallel_examples.hpp"
+#include "type_definitions.hpp"
 
 
 // todo: add timings
 
 namespace ES{
+
+    /// Function to generate a vector of linearly spaced points.
+    /// This function will generate _num_ points that start at the value _start_ and stop at the value _stop_
+    /// \param start starting value for array of points
+    /// \param stop last value of the array of points
+    /// \param num number of points to generate
+    /// \return Vector containing linearly spaced points
+    ///
     Vector gen_linspace(const NumberType start,
                         const NumberType stop,
                         const size_t num)
@@ -31,6 +39,22 @@ namespace ES{
         return x;
     }
 
+    ///    Compute the dot-product for non-adjacent data seperated by a stride length.
+    ///  For two vectors, the user will input the stripe,
+    ///  and the number of stripes in total to determine the stride.
+    ///
+    /// \Example
+    /// So for 4 stripes this will look at elts in multiples of 4, i.e.: <br>
+    ///    0, 4,  8, ... <br>
+    ///    1, 5,  9, ... <br>
+    ///    2, 6, 10, ... <br>
+    ///    3, 7, 11, ...
+    ///
+    /// \param a first input vector
+    /// \param b second input vector
+    /// \param stripe_num the index of the first value in the desired stripe
+    /// \param num_stripes the stride for
+    /// \return
     NumberType stripped_dot_product(const Vector &a,
                                     const Vector &b,
                                     const int stripe_num,
@@ -42,6 +66,7 @@ namespace ES{
         }
         return dot_product;
     }
+
 
     void product_thread(NumberType &value,
                         const Vector &a,
@@ -59,12 +84,6 @@ namespace ES{
 
         std::thread t0(product_thread, std::ref(value0), std::ref(a), std::ref(b), 0, 1);
         t0.join();
-//        std::thread t1(product_thread, std::ref(value1), std::ref(a), std::ref(b), 1);
-//        t1.join();
-//        std::thread t2(product_thread, std::ref(value2), std::ref(a), std::ref(b), 2);
-//        t2.join();
-//        std::thread t3(product_thread, std::ref(value3), std::ref(a), std::ref(b), 3);
-//        t3.join();
 
         return value0;
     }
@@ -80,11 +99,6 @@ namespace ES{
         t0.join();
         t1.join();
 
-//        std::thread t2(product_thread, std::ref(value2), std::ref(a), std::ref(b), 2);
-//        t2.join();
-//        std::thread t3(product_thread, std::ref(value3), std::ref(a), std::ref(b), 3);
-//        t3.join();
-
         return value0 + value1;
     }
 
@@ -95,7 +109,6 @@ namespace ES{
         NumberType value1 = 0;
         NumberType value2 = 0;
 
-
         std::thread t0(product_thread, std::ref(value0), std::ref(a), std::ref(b), 0, 3);
         std::thread t1(product_thread, std::ref(value1), std::ref(a), std::ref(b), 1, 3);
         std::thread t2(product_thread, std::ref(value2), std::ref(a), std::ref(b), 2, 3);
@@ -103,7 +116,6 @@ namespace ES{
         t0.join();
         t1.join();
         t2.join();
-
 
         return value0 + value1 + value2;
     }
@@ -139,9 +151,8 @@ namespace ES{
         value = std::inner_product(std::cbegin(a) + start,
                                    std::cbegin(a) + stop,
                                    std::cbegin(b) + start,
-                                   0.0);
+                                   static_cast<NumberType>(0.0));
     }
-
 
 
     NumberType parallel_dot_product(const Vector &a,
@@ -149,7 +160,7 @@ namespace ES{
     {
         const int num_threads = std::thread::hardware_concurrency();
         std::vector<std::thread> thread_list((unsigned long)num_threads);
-        std::vector<double> values((unsigned long)num_threads);
+        std::vector<NumberType> values((unsigned long)num_threads);
 
         for (int i = 0; i < num_threads; ++i) {
             size_t start = i*a.size() / num_threads;
@@ -167,13 +178,18 @@ namespace ES{
             thread_list[i].join();
         }
 
-        return std::accumulate(std::cbegin(values), std::cend(values), 0.0);
+        return std::accumulate(std::cbegin(values),
+                               std::cend(values),
+                               static_cast<NumberType>(0.0));
     }
 
     NumberType sequential_dot_product(const Vector &a,
                                       const Vector &b)
     {
-        return std::inner_product(a.cbegin(), a.cend(), b.cbegin(), 0.0);
+        return std::inner_product(a.cbegin(),
+                                  a.cend(),
+                                  b.cbegin(),
+                                  static_cast<NumberType>(0.0));
     }
 }
 
