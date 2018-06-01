@@ -1,3 +1,7 @@
+//
+//  Program to show of concepts discussed in Parallel Programming Class
+//
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -7,6 +11,7 @@
 #include "general_coding.hpp"
 
 #include "compiler_test_code.hpp"
+
 
 int main() {
     //
@@ -45,7 +50,6 @@ int main() {
     ES::benchmark_two_thread(1'000'000);
     ES::benchmark_three_thread(1'000'000);
     ES::benchmark_four_thread(1'000'000);
-
 
     return compiler_explorer_code();
 }

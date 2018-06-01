@@ -1,7 +1,9 @@
 //
 // Created by Erik Sevre on 5/31/18.
 //
-
+//
+//  This is the code I used for compiler explorer example that reduces to a few lines of assembly.
+//
 #pragma once
 
 
