@@ -1,6 +1,10 @@
 //
 // Created by Erik Sevre on 5/29/18.
 //
+//  The code below is intended for an example of code with threads,
+//  how to organize code for different situations. This is not optimized
+//  to be fast, just to show how code can be organized.
+//
 
 #pragma once
 
@@ -14,8 +18,6 @@
 
 #include "type_definitions.hpp"
 
-
-// todo: add timings
 
 namespace ES{
 
@@ -32,7 +34,7 @@ namespace ES{
     {
         Vector x(num);
         std::generate(x.begin(), x.end(),
-                      [start, stop, i=0, dx=(stop - start)/(num-1.0)]() mutable
+                      [start, stop, i=0, dx=(stop - start) / (num-1.0)]() mutable
                       {
                           return start + dx*i++;
                       });
@@ -77,6 +79,9 @@ namespace ES{
         value = stripped_dot_product(a,b,stripe_num, num_stripes);
     }
 
+    //    ****    ****    ****    ****    ****    ****    ****
+    //  Hard coded functions for 1, 2, 3, and 4 threads
+    //    ****    ****    ****    ****    ****    ****    ****
     NumberType dot_product_one_thread(const Vector &a,
                                       const Vector &b)
     {
@@ -141,7 +146,16 @@ namespace ES{
         return value0 + value1 + value2 + value3;
     }
 
-
+    /// Simple parallel partial dot product function.
+    /// Computation starts at the index indicated by start,
+    /// and finishes at the index indicated by stop.
+    /// Return value is passes as a parameter for simplifying use with std::thread
+    ///
+    /// \param a  vector input
+    /// \param b  vector input
+    /// \param start starting index
+    /// \param stop  stopping index (not included in product)
+    /// \param value return value stored here
     void parallel_partial_product(const Vector &a,
                                   const Vector &b,
                                   const size_t start,
@@ -151,10 +165,16 @@ namespace ES{
         value = std::inner_product(std::cbegin(a) + start,
                                    std::cbegin(a) + stop,
                                    std::cbegin(b) + start,
-                                   static_cast<NumberType>(0.0));
+                                   static_cast<NumberType>(0));
     }
 
 
+    /// Simple method to compute dot product with parallel programming.
+    /// Here I am using threads, but this could be updated for OpenMP or MPI
+    ///
+    /// \param a [Vector] input
+    /// \param b [Vector] input
+    /// \return [double] dot product value
     NumberType parallel_dot_product(const Vector &a,
                                     const Vector &b)
     {
@@ -180,16 +200,23 @@ namespace ES{
 
         return std::accumulate(std::cbegin(values),
                                std::cend(values),
-                               static_cast<NumberType>(0.0));
+                               static_cast<NumberType>(0));
     }
 
+    /// Simple implementation of sequential dot product.
+    /// This function just calls the inner_product function
+    /// defined in the STL numeric header files
+    ///
+    /// \param a [Vector] input
+    /// \param b [Vector] input
+    /// \return [double] dot product value
     NumberType sequential_dot_product(const Vector &a,
                                       const Vector &b)
     {
         return std::inner_product(a.cbegin(),
                                   a.cend(),
                                   b.cbegin(),
-                                  static_cast<NumberType>(0.0));
+                                  static_cast<NumberType>(0));
     }
 }
 
